@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Endpoint{
+struct Endpoint {
     var path: String
     var queryItems: [URLQueryItem] = []
     
@@ -30,3 +30,4 @@ struct Endpoint{
         Endpoint(path: "lookup.php", queryItems: [URLQueryItem(name: "i", value: id)])
     }
 }
+
