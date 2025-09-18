@@ -9,7 +9,7 @@ import SwiftUI
 
 struct RecipeDetailView: View {
     let recipe: Recipe
-    
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
@@ -22,7 +22,7 @@ struct RecipeDetailView: View {
                         }
                     case .success(let image):
                         image.resizable().scaledToFill()
-                    case .failure(let error):
+                    case .failure:
                         ZStack {
                             Rectangle().fill(.gray.opacity(0.15))
                             Image(systemName: "photo")
@@ -33,23 +33,23 @@ struct RecipeDetailView: View {
                 }
                 .frame(height: 240)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
-                
+
                 Text(recipe.title)
                     .font(.title)
                     .bold()
-                
+
                 if let instructions = recipe.instructions, !instructions.isEmpty {
                     Text(instructions).font(.body).foregroundStyle(.primary)
                 } else {
                     Text("No instructions provided.").foregroundStyle(.secondary)
                 }
-                
-                HStack{
+
+                HStack {
                     if let category = recipe.category, !category.isEmpty {
                         Label(category, systemImage: "tag")
                     }
                     if let area = recipe.area, !area.isEmpty {
-                        Label(area, systemImage:  "globe.europe.africa")
+                        Label(area, systemImage: "globe.europe.africa")
                     }
                 }
                 .foregroundStyle(.secondary)
@@ -62,5 +62,5 @@ struct RecipeDetailView: View {
 }
 
 #Preview {
-    NavigationStack{RecipeDetailView(recipe: PreviewData.recipe)}
+    NavigationStack { RecipeDetailView(recipe: PreviewData.recipe) }
 }

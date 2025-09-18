@@ -16,7 +16,7 @@ final class RecipeListViewModel: ObservableObject {
     
     private var api: APIClientProtocol
     
-    init(api: APIClientProtocol = APIClient()) {
+    init(api: APIClientProtocol) {
         self.api = api
     }
     
@@ -39,5 +39,11 @@ final class RecipeListViewModel: ObservableObject {
     
     func loadInitial() async {
         await search("pasta")
+    }
+}
+
+extension RecipeListViewModel {
+    static func make(deps: AppDependencies) -> RecipeListViewModel {
+        RecipeListViewModel(api: deps.api)
     }
 }
