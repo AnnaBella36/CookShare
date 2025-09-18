@@ -10,18 +10,19 @@ import SwiftUI
 @main
 struct CookShareApp: App {
     
-    private let deps: AppDependencies
-    private let listVM: RecipeListViewModel
+    private let dependencies: AppContainer
+    private let viewModel: RecipeListViewModel
     
     init(){
-        let deps = AppDependencies(api: APIClient())
-        self.deps = deps
-        self.listVM = RecipeListViewModel(api: deps.api)
+        let container = AppContainer(apiClient: APIClient())
+        self.dependencies = container
+        self.viewModel = RecipeListViewModel(apiClient: container.apiClient)
     }
     var body: some Scene {
         WindowGroup {
-            RootView(deps: deps)
-                .environmentObject(listVM)
+            RootView()
+                .environmentObject(viewModel)
         }
     }
 }
+

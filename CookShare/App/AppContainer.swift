@@ -7,6 +7,8 @@
 
 import Foundation
 
-struct AppDependencies {
-    let api: APIClientProtocol
+struct AppContainer {
+    let apiClient: APIClientProtocol
+    
 }
+

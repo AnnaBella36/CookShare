@@ -29,3 +29,4 @@ struct Recipe: Identifiable, Decodable, Equatable {
         case category = "strCategory"
     }
 }
+

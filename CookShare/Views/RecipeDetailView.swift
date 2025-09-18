@@ -64,3 +64,4 @@ struct RecipeDetailView: View {
 #Preview {
     NavigationStack { RecipeDetailView(recipe: PreviewData.recipe) }
 }
+
