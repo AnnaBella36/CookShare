@@ -96,6 +96,7 @@ struct RecipeListView: View {
         searchFocused = false
         Task {
             await viewModel.search(query)
+            await MainActor.run {searchFocused = false }
         }
     }
 }
@@ -103,7 +104,7 @@ struct RecipeListView: View {
 #Preview("Loaded") {
     NavigationStack {
         RecipeListView()
-            .environmentObject(RecipeListViewModel(apiClient: MockAPI()))
+            .environmentObject(RecipeListViewModel(apiClient: MockAPIClient()))
     }
 }
 

@@ -8,20 +8,35 @@
 import SwiftUI
 
 struct RootView: View {
+    @EnvironmentObject private var viewModel: RecipeListViewModel
+    @StateObject private var authViewModel = AuthViewModel()
     
     var body: some View {
-        NavigationStack{
-            RecipeListView()
-                .navigationTitle("CookBook")
+        Group {
+            if !authViewModel.isAuthenticated {
+                AuthGateView(viewModel: authViewModel)
+            } else {
+                NavigationStack{
+                    RecipeListView()
+                        .navigationTitle("CookBook")
+                        .toolbar {
+                            ToolbarItem(placement: .topBarTrailing) {
+                                Button("Logout") {
+                                    authViewModel.logout()
+                                }
+                            }
+                        }
+                }
+            }
         }
+        
     }
 }
 
 #Preview {
-   let vm = RecipeListViewModel(apiClient: MockAPI())
-    return NavigationStack {
+    NavigationStack {
         RootView()
-            .environmentObject(vm)
+            .environmentObject(RecipeListViewModel(apiClient: MockAPIClient()))
     }
 }
 
