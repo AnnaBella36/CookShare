@@ -8,19 +8,24 @@
 import SwiftUI
 
 struct RecipeListView: View {
-    @EnvironmentObject var vm: RecipeListViewModel
+    
+    @EnvironmentObject var viewModel: RecipeListViewModel
     @State private var searchText: String = ""
-
+    @FocusState private var searchFocused: Bool
+    
     var body: some View {
         VStack {
             searchBar
-                .padding(.horizontal)
+                .padding(.horizontal, 16)
                 .padding(.top)
 
             contentView
         }
         .task {
-            await vm.loadInitial()
+            if viewModel.recipes.isEmpty {
+                await viewModel.loadInitial()
+            }
+                
         }
     }
 
@@ -31,10 +36,14 @@ struct RecipeListView: View {
             TextField("Search recipes (e.g. “pasta”)", text: $searchText)
                 .textFieldStyle(.roundedBorder)
                 .submitLabel(.search)
-                .onSubmit { Task { await vm.search(searchText) } }
-
+                .onSubmit { Task { await viewModel.search(searchText) } }
+                .onChange(of: searchText) { newValue in
+                    if newValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        viewModel.reset()
+                    }
+                }
             Button {
-                Task { await vm.search(searchText) }
+                Task { await viewModel.search(searchText) }
             } label: {
                 Image(systemName: "magnifyingglass")
             }
@@ -44,14 +53,21 @@ struct RecipeListView: View {
 
     @ViewBuilder
     private var contentView: some View {
-        if vm.isLoading {
+        if viewModel.isLoading {
             ProgressView("Loading...").padding()
-        } else if let message = vm.errorMessage {
+        } else if searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            ContentUnavailableView(
+                                   "Search",
+                                   systemImage: "magnifyingglass",
+                                   description: Text("Type a query to find recipes.")
+                                   )
+                                   .padding()
+        } else if let message = viewModel.errorMessage {
             ContentUnavailableView("Error",
                                    systemImage: "exclamationmark.triangle",
                                    description: Text(message))
             .padding()
-        } else if vm.recipes.isEmpty {
+        } else if viewModel.recipes.isEmpty {
             ContentUnavailableView(
                 "No results",
                 systemImage: "fork.knife",
@@ -64,7 +80,7 @@ struct RecipeListView: View {
     }
 
     private var listView: some View {
-        List(vm.recipes) { recipe in
+        List(viewModel.recipes) { recipe in
             NavigationLink {
                 RecipeDetailView(recipe: recipe)
             } label: {
@@ -72,21 +88,22 @@ struct RecipeListView: View {
             }
         }
         .listStyle(.plain)
+        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+    }
+    
+    private func performSearch() {
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        searchFocused = false
+        Task {
+            await viewModel.search(query)
+        }
     }
 }
 
 #Preview("Loaded") {
-    struct MockAPI: APIClientProtocol {
-        func fetch<T>(_ type: T.Type, from endpoint: Endpoint) async throws -> T where T : Decodable {
-            if T.self == MealSearchResponse.self {
-                return MealSearchResponse(meals: PreviewData.recipes) as! T
-            }
-            throw APIError.noData
-        }
-    }
-    let vm = RecipeListViewModel(api: MockAPI())
-    return NavigationStack {
+    NavigationStack {
         RecipeListView()
-            .environmentObject(vm)
+            .environmentObject(RecipeListViewModel(apiClient: MockAPI()))
     }
 }
+
