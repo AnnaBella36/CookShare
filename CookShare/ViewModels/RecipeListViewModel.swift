@@ -15,6 +15,7 @@ final class RecipeListViewModel: ObservableObject {
     @Published var errorMessage: String?
     
     private var apiClient: APIClientProtocol
+    private var lastQuery: String?
     
     init(apiClient: APIClientProtocol) {
         self.apiClient = apiClient
@@ -24,33 +25,38 @@ final class RecipeListViewModel: ObservableObject {
         recipes = []
         errorMessage = nil
         isLoading = false
+        lastQuery = nil
     }
     
     func search(_ query: String) async {
-        guard !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
             reset()
             return
         }
+        if trimmed == lastQuery {
+            return
+        }
+        
         isLoading = true
         errorMessage = nil
         do {
             let endpoint = Endpoint.searchMeals(query: query)
             let response = try await apiClient.fetch(MealSearchResponse.self, from: endpoint)
             recipes = response.meals ?? []
+            lastQuery = trimmed
         } catch {
             errorMessage = (error as? APIError)?.localizedDescription ?? error.localizedDescription
         }
         isLoading = false
     }
     
-    func loadInitial() async {
-        await search("pasta")
-    }
-}
-
-extension RecipeListViewModel {
-    static func make(deps: AppContainer) -> RecipeListViewModel {
-        RecipeListViewModel(apiClient: deps.apiClient)
+    func loadData() async {
+        if recipes.isEmpty {
+            await search("pasta")
+        } else {
+            return
+        }
     }
 }
 

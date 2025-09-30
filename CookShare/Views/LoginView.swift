@@ -12,6 +12,7 @@ struct LoginView: View {
     @ObservedObject var viewModel: AuthViewModel
     
     var onSwitchToSignup: () -> Void
+    var onRestorePassword: () -> Void = {}
     
     var body: some View {
         VStack(spacing: 16) {
@@ -46,11 +47,18 @@ struct LoginView: View {
                 .disabled(viewModel.email.isEmpty || viewModel.password.isEmpty)
             }
             
+            Button("Forgot password?") {
+                onRestorePassword()
+            }
+            .font(.footnote)
+            .frame(maxWidth: .infinity, alignment: .center)
+            
+            
             Button("Create account") {
                 onSwitchToSignup()
             }
+            .frame(maxWidth: .infinity, alignment: .center)
             .font(.footnote)
-            .padding(.top, 8)
         }
         .padding()
     }
@@ -59,3 +67,4 @@ struct LoginView: View {
 #Preview {
     LoginView(viewModel: AuthViewModel(), onSwitchToSignup: {})
 }
+

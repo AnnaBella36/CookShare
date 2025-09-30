@@ -7,19 +7,33 @@
 
 import SwiftUI
 
+enum AuthFlow {
+    case login
+    case signup
+    case restorePassword
+}
+
 struct AuthGateView: View {
     @ObservedObject var viewModel: AuthViewModel
-    @State private var showSignup: Bool = false
+    @State private var flow: AuthFlow = .login
     
     var body: some View {
-        if showSignup {
-            SignupView(viewModel: viewModel) {
-                showSignup = false
-            }
-        } else {
-            LoginView(viewModel: viewModel) {
-                showSignup = true
-            }
+        switch flow {
+        case .login:
+            LoginView(
+                viewModel: viewModel,
+                onSwitchToSignup: { flow = .signup },
+                onRestorePassword: { flow = .restorePassword }
+            )
+        case .signup:
+            SignupView(
+                viewModel: viewModel,
+                onSwitchToLogin: { flow = .login }
+            )
+        case .restorePassword:
+            RestorePasswordView(
+                onBackToLogin: { flow = .login }
+            )
         }
     }
 }

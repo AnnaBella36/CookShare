@@ -16,20 +16,9 @@ struct RootView: View {
             if !authViewModel.isAuthenticated {
                 AuthGateView(viewModel: authViewModel)
             } else {
-                NavigationStack{
-                    RecipeListView()
-                        .navigationTitle("CookBook")
-                        .toolbar {
-                            ToolbarItem(placement: .topBarTrailing) {
-                                Button("Logout") {
-                                    authViewModel.logout()
-                                }
-                            }
-                        }
-                }
+                RecipeListView()
             }
         }
-        
     }
 }
 
@@ -37,6 +26,7 @@ struct RootView: View {
     NavigationStack {
         RootView()
             .environmentObject(RecipeListViewModel(apiClient: MockAPIClient()))
+            .environmentObject(AuthViewModel())
     }
 }
 

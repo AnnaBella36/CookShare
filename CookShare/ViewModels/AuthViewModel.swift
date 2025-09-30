@@ -10,6 +10,8 @@ import Foundation
 @MainActor
 final class AuthViewModel: ObservableObject {
     
+    private let authenticationService: AuthServiceProtocol
+    
     @Published var name: String = ""
     @Published var email: String = ""
     @Published var password: String = ""
@@ -17,44 +19,74 @@ final class AuthViewModel: ObservableObject {
     @Published var isAuthenticated: Bool = false
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
+    @Published private(set) var session: AuthSession?
+    
+    init(authService: AuthServiceProtocol = KeychainAuthService()){
+        self.authenticationService = authService
+        Task{ await restore() }
+    }
+    
+    func restore() async {
+        isLoading = true
+        errorMessage = nil
+        session = await authenticationService.restoreSession()
+        isAuthenticated = (session != nil)
+        isLoading = false
+    }
     
     func login() async {
         errorMessage = nil
-        if email.trimmingCharacters(in: .whitespaces).isEmpty ||
-            password.trimmingCharacters(in: .whitespaces).isEmpty {
+        let trimmedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedPassword = password.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedEmail.isEmpty, !trimmedPassword.isEmpty else {
             errorMessage = "Enter email and password"
-             return
+            return
         }
-        
         isLoading = true
-        try? await Task.sleep(nanoseconds: 500_000_000)
-        isLoading = true
-        
-        isAuthenticated = true
+        do {
+            let newSession = try await authenticationService.login(email: trimmedEmail, password: trimmedPassword)
+            session = newSession
+            isAuthenticated = true
+        } catch {
+            errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+            isAuthenticated = false
+        }
+        isLoading = false
     }
     
     func signup() async {
         errorMessage = nil
-        if name.trimmingCharacters(in: .whitespaces).isEmpty ||
-            email.trimmingCharacters(in: .whitespaces).isEmpty ||
-            password.trimmingCharacters(in: .whitespaces).isEmpty {
-            errorMessage = "Fill in all the fields"
-            return
-        }
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedPassword = password.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        guard !trimmedName.isEmpty, !trimmedEmail.isEmpty, !trimmedPassword.isEmpty else {
+            errorMessage = "Please fill in all fields"
+            return }
         
         isLoading = true
-        try? await Task.sleep(nanoseconds: 500_000_00)
+        do {
+            let createdSession = try await authenticationService.signup(name: trimmedName,
+                                                                        email: trimmedEmail,
+                                                                        password: trimmedPassword)
+            session = createdSession
+            isAuthenticated = true
+        } catch {
+            errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+            isAuthenticated = false
+        }
         isLoading = false
-        
-        isAuthenticated = true
     }
     
     func logout() {
-        isAuthenticated = false
-        name = ""
-        email = ""
-        password = ""
-        errorMessage = nil
-        isLoading = false 
+        Task {
+            isLoading = true
+            await authenticationService.logout()
+            session = nil
+            isAuthenticated = false
+            name = ""; email = ""; password = ""
+            errorMessage = nil
+            isLoading = false
+        }
     }
 }
