@@ -37,23 +37,30 @@ struct RecipeRow: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text(recipe.title)
                     .font(.headline)
-                    .lineLimit(2)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                
                 HStack(spacing: 8) {
                     if let category = recipe.category, !category.isEmpty {
-                        Label(category, systemImage: "tag")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                        HStack(spacing: 4) {
+                            Image(systemName: "tag")
+                            Text(category)
+                        }
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
                     }
                     if let area = recipe.area, !area.isEmpty {
-                        Label(area, systemImage: "globe.europe.africa")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                        HStack(spacing: 4) {
+                            Image(systemName: "globe.europe.africa")
+                            Text(area)
+                        }
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
                     }
                 }
             }
             Spacer()
         }
-        .padding()
     }
 }
 

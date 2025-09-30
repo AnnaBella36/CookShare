@@ -9,6 +9,6 @@ import Foundation
 
 struct AppContainer {
     let apiClient: APIClientProtocol
-    
+    let authService: AuthServiceProtocol
 }
 
