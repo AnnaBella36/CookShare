@@ -14,6 +14,9 @@ struct RecipeListView: View {
     @State private var searchText: String = ""
     @FocusState private var searchFocused: Bool
     
+    @State private var userRecipes: [UserRecipe] = []
+    @State private var showAddRecipeView = false
+    
     var body: some View {
         NavigationStack {
             VStack {
@@ -24,7 +27,7 @@ struct RecipeListView: View {
                 contentView
             }
             .task {
-                    await viewModel.loadData()
+                await viewModel.loadData()
             }
             .navigationTitle("CookBook")
             .toolbar {
@@ -33,12 +36,24 @@ struct RecipeListView: View {
                         authViewModel.logout()
                     }
                 }
+                ToolbarItem(placement: .bottomBar) {
+                    Button {
+                        showAddRecipeView = true
+                    } label: {
+                        Label("Add Recipe", systemImage: "plus")
+                    }
+                }
+            }
+            .sheet(isPresented: $showAddRecipeView) {
+                AddRecipeView { recipe in
+                    userRecipes.append(recipe)
+                }
             }
         }
     }
-
+    
     // MARK: - Subviews
-
+    
     private var searchBar: some View {
         HStack {
             TextField("Search recipes (e.g. “pasta”)", text: $searchText)
@@ -60,11 +75,30 @@ struct RecipeListView: View {
             .buttonStyle(.bordered)
         }
     }
-
+    
     @ViewBuilder
     private var contentView: some View {
         if viewModel.isLoading {
             ProgressView("Loading...").padding()
+        }  else if !userRecipes.isEmpty {
+            List(userRecipes) { recipe in
+                HStack {
+                    if let image = recipe.image {
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 60, height: 60)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                    } else {
+                        Image(systemName: "photo")
+                            .frame(width: 60, height: 60)
+                            .foregroundStyle(.gray)
+                    }
+                    
+                    Text(recipe.title)
+                        .font(.body)
+                }
+            }
         } else if searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             ContentUnavailableView(
                 "Search",
@@ -88,7 +122,7 @@ struct RecipeListView: View {
             listView
         }
     }
-
+    
     private var listView: some View {
         List(viewModel.recipes) { recipe in
             NavigationLink {
