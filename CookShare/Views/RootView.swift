@@ -9,7 +9,7 @@ import SwiftUI
 
 struct RootView: View {
     @EnvironmentObject private var viewModel: RecipeListViewModel
-    @StateObject private var authViewModel = AuthViewModel()
+    @EnvironmentObject private var authViewModel: AuthViewModel
     
     var body: some View {
         Group {
