@@ -12,5 +12,6 @@ struct UserRecipe: Identifiable, Equatable {
     let id = UUID()
     let title: String
     let image: UIImage?
+    let description: String?
 }
 
