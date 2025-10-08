@@ -9,7 +9,7 @@ import SwiftUI
 
 struct RecipeDetailView: View {
     let recipe: Recipe
-
+    
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
@@ -33,17 +33,17 @@ struct RecipeDetailView: View {
                 }
                 .frame(height: 240)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
-
+                
                 Text(recipe.title)
                     .font(.title)
                     .bold()
-
+                
                 if let instructions = recipe.instructions, !instructions.isEmpty {
                     Text(instructions).font(.body).foregroundStyle(.primary)
                 } else {
                     Text("No instructions provided.").foregroundStyle(.secondary)
                 }
-
+                
                 HStack {
                     if let category = recipe.category, !category.isEmpty {
                         Label(category, systemImage: "tag")

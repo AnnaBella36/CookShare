@@ -21,7 +21,7 @@ final class AuthViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published private(set) var session: AuthSession?
     
-    init(authService: AuthServiceProtocol = KeychainAuthService()){
+    init(authService: AuthServiceProtocol = KeychainAuthService()) {
         self.authenticationService = authService
         Task{ await restore() }
     }

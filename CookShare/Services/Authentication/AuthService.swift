@@ -47,7 +47,6 @@ protocol AuthServiceProtocol {
 }
 
 final class KeychainAuthService: AuthServiceProtocol {
-    private let usersIndexKey = "auth.users.index"
     private let sessionAccount = "session.current"
     
     private func simulateDelay() async {
@@ -62,19 +61,11 @@ final class KeychainAuthService: AuthServiceProtocol {
     private func isValidEmail(_ email: String) -> Bool{
         email.contains("@") && email.contains(".")
     }
-  
-    private func loadUsersIndex() -> Set<String> {
-        (UserDefaults.standard.array(forKey: usersIndexKey) as? [String]).map(Set.init) ?? []
-    }
-   
-    private func saveUsersIndex(_ set: Set<String>) {
-        UserDefaults.standard.set(Array(set), forKey: usersIndexKey)
-      
-    }
-   
+    
     private func saveUser(_ user: UserAccount) throws {
         let data = try JSONEncoder().encode(user)
-        try KeychainHelper.save(data, account: "user: \(user.email)")
+        try KeychainHelper.save(data, account: "user:\(user.email)")
+       
     }
   
     private func loadUser(email: String) throws -> UserAccount? {
@@ -90,6 +81,7 @@ final class KeychainAuthService: AuthServiceProtocol {
     private func loadSession() throws -> AuthSession? {
         guard let data = try KeychainHelper.load(account: sessionAccount) else {return nil}
         return try JSONDecoder().decode(AuthSession.self, from: data)
+
     }
    
     private func deleteSession() { KeychainHelper.delete(account: sessionAccount) }
@@ -101,12 +93,12 @@ final class KeychainAuthService: AuthServiceProtocol {
         guard isValidEmail(email) else { throw AuthValidationError.invalidEmail }
         guard password.count >= 8 else { throw AuthValidationError.weakPassword }
 
-        var index = loadUsersIndex()
-        guard !index.contains(email) else { throw AuthValidationError.emailAlreadyUsed }
+        if let _ = try loadUser(email: email) {
+            throw AuthValidationError.emailAlreadyUsed
+        }
 
         let user = UserAccount(name: name, email: email, passwordHash: sha256(password))
         try saveUser(user)
-        index.insert(email); saveUsersIndex(index)
 
         let session = AuthSession(email: email, token: UUID().uuidString, sessionCreationDate: Date())
         try saveSession(session)
