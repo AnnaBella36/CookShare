@@ -45,6 +45,9 @@ struct RecipeRow: View {
                         HStack(spacing: 4) {
                             Image(systemName: "tag")
                             Text(category)
+                                .lineLimit(1)
+                                .truncationMode(.tail)
+                                .minimumScaleFactor(0.9)
                         }
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
@@ -53,6 +56,8 @@ struct RecipeRow: View {
                         HStack(spacing: 4) {
                             Image(systemName: "globe.europe.africa")
                             Text(area)
+                                .lineLimit(1)
+                                .truncationMode(.tail)
                         }
                         .font(.subheadline)
                         .foregroundStyle(.secondary)

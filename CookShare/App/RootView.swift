@@ -16,7 +16,22 @@ struct RootView: View {
             if !authViewModel.isAuthenticated {
                 AuthGateView(viewModel: authViewModel)
             } else {
-                RecipeListView()
+                TabView {
+                    FeedView()
+                        .tabItem {
+                            Label("Feed", systemImage: "house.fill")
+                        }
+                    
+                    RecipeListView()
+                        .tabItem {
+                            Label("Search", systemImage: "magnifyingglass")
+                        }
+                    
+                    ProfileView()
+                        .tabItem {
+                            Label("Profile", systemImage: "person.fill")
+                        }
+                }
             }
         }
     }

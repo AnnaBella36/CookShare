@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct SignupView: View {
+    
     @ObservedObject var viewModel: AuthViewModel
     var onSwitchToLogin: () -> Void
     
