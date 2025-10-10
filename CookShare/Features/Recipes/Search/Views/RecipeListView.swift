@@ -11,10 +11,10 @@ struct RecipeListView: View {
     
     @EnvironmentObject var viewModel: RecipeListViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
+    @EnvironmentObject var social: SocialViewModel
     @State private var searchText: String = ""
     @FocusState private var searchFocused: Bool
-    
-    @State private var userRecipes: [UserRecipe] = []
+   
     @State private var showAddRecipeView = false
     
     var body: some View {
@@ -23,7 +23,6 @@ struct RecipeListView: View {
                 searchBar
                     .padding(.horizontal, 16)
                     .padding(.top)
-                
                 contentView
             }
             .navigationTitle("CookBook")
@@ -33,7 +32,7 @@ struct RecipeListView: View {
                         authViewModel.logout()
                     }
                 }
-                ToolbarItem(placement: .bottomBar) {
+                ToolbarItem(placement: .topBarLeading) {
                     Button {
                         showAddRecipeView = true
                     } label: {
@@ -43,7 +42,7 @@ struct RecipeListView: View {
             }
             .sheet(isPresented: $showAddRecipeView) {
                 AddRecipeView { recipe in
-                    userRecipes.append(recipe)
+                    social.addMyRecipe(recipe)
                 }
             }
         }
@@ -77,7 +76,7 @@ struct RecipeListView: View {
         if viewModel.isLoading {
             ProgressView("Loading...").padding()
         } else if searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            if userRecipes.isEmpty {
+            if social.myRecipes.isEmpty {
                 ContentUnavailableView(
                     "Search",
                     systemImage: "magnifyingglass",
@@ -96,7 +95,7 @@ struct RecipeListView: View {
                                    systemImage: "exclamationmark.triangle",
                                    description: Text(message))
             .padding()
-        } else if viewModel.recipes.isEmpty && viewModel.hasSearched && userRecipes.isEmpty {
+        } else if viewModel.recipes.isEmpty && viewModel.hasSearched && social.myRecipes.isEmpty {
             ContentUnavailableView(
                 "No results",
                 systemImage: "fork.knife",
@@ -105,7 +104,7 @@ struct RecipeListView: View {
             .padding()
         } else {
             List{
-                if !userRecipes.isEmpty {
+                if !social.myRecipes.isEmpty {
                     userRecipesSection()
                 }
                 Section("Results") {
@@ -123,7 +122,7 @@ struct RecipeListView: View {
     
     private func  userRecipesSection() -> some View {
         Section("My Recipes") {
-            ForEach(userRecipes) { recipe in
+            ForEach(social.myRecipes) { recipe in
                 userRecipeRow(recipe)
             }
         }
@@ -161,6 +160,7 @@ struct RecipeListView: View {
             }
         }
     }
+    
     private func performSearch() {
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         

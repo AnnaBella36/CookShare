@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct RecipeRow: View {
+    
+    @EnvironmentObject private var social: SocialViewModel
     let recipe: Recipe
     
     var body: some View {
@@ -45,6 +47,9 @@ struct RecipeRow: View {
                         HStack(spacing: 4) {
                             Image(systemName: "tag")
                             Text(category)
+                                .lineLimit(1)
+                                .truncationMode(.tail)
+                                .minimumScaleFactor(0.9)
                         }
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
@@ -53,6 +58,8 @@ struct RecipeRow: View {
                         HStack(spacing: 4) {
                             Image(systemName: "globe.europe.africa")
                             Text(area)
+                                .lineLimit(1)
+                                .truncationMode(.tail)
                         }
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
@@ -60,6 +67,11 @@ struct RecipeRow: View {
                 }
             }
             Spacer()
+            Image(systemName: social.isFavorite(recipe) ? "heart.fill" : "heart")
+                .imageScale(.large)
+                .symbolRenderingMode(.hierarchical)
+                .foregroundStyle(social.isFavorite(recipe) ? .red : .secondary)
+                .accessibilityLabel("Favorite")
         }
     }
 }
