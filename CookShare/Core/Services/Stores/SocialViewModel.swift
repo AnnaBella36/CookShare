@@ -8,14 +8,8 @@
 import Foundation
 import SwiftUI
 
-struct UserSummary: Identifiable, Hashable {
-    let id: String
-    let name: String
-    let avatarSystemImage: String
-}
-
 @MainActor
-final class SocialStore: ObservableObject {
+final class SocialViewModel: ObservableObject {
     @Published private(set) var myRecipes: [UserRecipe] = []
     @Published private(set) var favorites: Set<String> = []
     @Published private(set) var follows: Set<String> = ["u.alex", "u.marie"]
@@ -38,7 +32,6 @@ final class SocialStore: ObservableObject {
         }
     }
     
-    // MARK: - My Recipes
     func addMyRecipe(_ recipe: UserRecipe) {
         myRecipes.insert(recipe, at: 0)
     }
@@ -46,8 +39,7 @@ final class SocialStore: ObservableObject {
     func removeMyRecipes(at offsets: IndexSet) {
         myRecipes.remove(atOffsets: offsets)
     }
-    
-    // MARK: - Favorites
+   
     func toggleFavorite(for recipe: Recipe) {
         if favorites.contains(recipe.id) {
             favorites.remove(recipe.id)
@@ -60,13 +52,10 @@ final class SocialStore: ObservableObject {
         favorites.contains(recipe.id)
     }
     
-    // MARK: - Follows
+    
     func follow(_ userId: String) { follows.insert(userId) }
     func unfollow(_ userId: String) { follows.remove(userId) }
     func isFollowing(_ userId: String) -> Bool { follows.contains(userId) }
     
-    func refreshFeed() async {
-        try? await Task.sleep(nanoseconds: 400_000_000)
-    }
 }
 

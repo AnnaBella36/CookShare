@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct RecipeRow: View {
+    
+    @EnvironmentObject private var social: SocialViewModel
     let recipe: Recipe
     
     var body: some View {
@@ -65,6 +67,11 @@ struct RecipeRow: View {
                 }
             }
             Spacer()
+            Image(systemName: social.isFavorite(recipe) ? "heart.fill" : "heart")
+                .imageScale(.large)
+                .symbolRenderingMode(.hierarchical)
+                .foregroundStyle(social.isFavorite(recipe) ? .red : .secondary)
+                .accessibilityLabel("Favorite")
         }
     }
 }
