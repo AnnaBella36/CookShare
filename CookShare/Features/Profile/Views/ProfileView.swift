@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ProfileView: View {
     @EnvironmentObject private var authViewModel: AuthViewModel
-    @EnvironmentObject private var social: SocialStore
+    @EnvironmentObject private var social: SocialViewModel
     
     var body: some View {
         NavigationStack {
@@ -62,5 +62,5 @@ struct ProfileView: View {
 #Preview {
     ProfileView()
         .environmentObject(AuthViewModel())
-        .environmentObject(SocialStore())
+        .environmentObject(SocialViewModel())
 }

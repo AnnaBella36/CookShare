@@ -9,7 +9,7 @@ import SwiftUI
 
 struct UsersView: View {
     
-    @EnvironmentObject private var social: SocialStore
+    @EnvironmentObject private var social: SocialViewModel
     
     var body: some View {
         NavigationStack {
@@ -36,6 +36,6 @@ struct UsersView: View {
 }
 
 #Preview {
-    UsersView().environmentObject(SocialStore())
+    UsersView().environmentObject(SocialViewModel())
 }
 

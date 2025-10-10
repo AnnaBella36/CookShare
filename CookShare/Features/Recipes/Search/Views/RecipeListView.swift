@@ -11,7 +11,7 @@ struct RecipeListView: View {
     
     @EnvironmentObject var viewModel: RecipeListViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
-    @EnvironmentObject var social: SocialStore
+    @EnvironmentObject var social: SocialViewModel
     @State private var searchText: String = ""
     @FocusState private var searchFocused: Bool
    

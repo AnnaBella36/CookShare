@@ -9,14 +9,14 @@ import SwiftUI
 
 struct FavoriteButton: View {
     
-    @EnvironmentObject private var social: SocialStore
+    @EnvironmentObject private var social: SocialViewModel
     let recipe: Recipe
     
     var body: some View {
         Button {
             social.toggleFavorite(for: recipe)
         } label: {
-            Image(systemName: social.isFavorite(recipe) ? "heart.fill" : "heartt")
+            Image(systemName: social.isFavorite(recipe) ? "heart.fill" : "heart")
                 .imageScale(.large)
                 .symbolRenderingMode(.hierarchical)
                 .foregroundStyle(social.isFavorite(recipe) ? .red : .secondary)
@@ -30,5 +30,5 @@ struct FavoriteButton: View {
 
 #Preview {
     FavoriteButton(recipe: PreviewData.recipe)
-        .environmentObject(SocialStore())
+        .environmentObject(SocialViewModel())
 }

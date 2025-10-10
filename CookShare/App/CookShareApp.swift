@@ -13,14 +13,16 @@ struct CookShareApp: App {
     private let dependencies: AppContainer
     private let viewModel: RecipeListViewModel
     private let authViewModel: AuthViewModel
-    private let socialStore: SocialStore
+    private let socialStore: SocialViewModel
+    
     init() {
         let container = AppContainer(apiClient: APIClient(), authService: KeychainAuthService())
         self.dependencies = container
         self.viewModel = RecipeListViewModel(apiClient: container.apiClient)
         self.authViewModel = AuthViewModel(authService: container.authService)
-        self.socialStore = SocialStore()
+        self.socialStore = SocialViewModel()
     }
+    
     var body: some Scene {
         WindowGroup {
             RootView()

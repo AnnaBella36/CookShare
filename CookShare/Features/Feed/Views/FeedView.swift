@@ -8,7 +8,8 @@
 import SwiftUI
 
 struct FeedView: View {
-    @EnvironmentObject private var social: SocialStore
+    
+    @EnvironmentObject private var social: SocialViewModel
     @State private var showUsers = false
     
     var body: some View {
@@ -31,7 +32,14 @@ struct FeedView: View {
                                     } label: {
                                         RecipeRow(recipe: recipe)
                                     }
-                                    FavoriteButton(recipe: recipe)
+                                    .swipeActions(edge: .trailing) {
+                                        Button {
+                                            social.toggleFavorite(for: recipe)
+                                        } label: {
+                                            Label("Like", systemImage: social.isFavorite(recipe) ? "heart.fill" : "heart")
+                                        }
+                                        .tint(.red)
+                                    }
                                 }
                             }
                         }
@@ -56,17 +64,15 @@ struct FeedView: View {
                         Label("People", systemImage: "person.2.fill")
                     }
                 }
-        }
+            }
             .sheet(isPresented: $showUsers) {
                 UsersView()
                     .environmentObject(social)
             }
-            .refreshable {
-                await social.refreshFeed()
-            }
+            
+        }
     }
-}
-   
+    
     private func userRecipeRow(_ recipe: UserRecipe) -> some View {
         HStack(spacing: 12) {
             ZStack {
@@ -85,7 +91,7 @@ struct FeedView: View {
             }
             .frame(width: 80, height: 80)
             .clipShape(RoundedRectangle(cornerRadius: 10))
-
+            
             VStack(alignment: .leading, spacing: 4) {
                 Text(recipe.title)
                     .font(.body)
@@ -104,5 +110,5 @@ struct FeedView: View {
 
 #Preview {
     FeedView()
-        .environmentObject(SocialStore())
+        .environmentObject(SocialViewModel())
 }
