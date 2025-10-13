@@ -23,7 +23,12 @@ struct RecipeListView: View {
                 searchBar
                     .padding(.horizontal, 16)
                     .padding(.top)
+                filtersBar()
                 contentView
+            }
+            .task {
+                await viewModel.fetchCategories()
+                await viewModel.fetchAreas()
             }
             .navigationTitle("CookBook")
             .toolbar {
@@ -72,6 +77,46 @@ struct RecipeListView: View {
     }
     
     @ViewBuilder
+    private func filtersBar() -> some View {
+        HStack(spacing: 12) {
+            Menu {
+                Button("All Categories") { viewModel.selectedCategory = nil }
+                ForEach(viewModel.categories) { cat in
+                    Button(cat.name) { viewModel.selectedCategory = cat.name }
+                }
+            } label: {
+                Label(viewModel.selectedCategory ?? "Category", systemImage: "tag")
+            }
+            Menu {
+                Button("All Areas") { viewModel.selectedArea = nil }
+                ForEach(viewModel.areas) { area in
+                    Button(area.name) { viewModel.selectedArea = area.name }
+                }
+            } label: {
+                Label(viewModel.selectedArea ?? "Area", systemImage: "globe.europe.africa")
+            }
+            Toggle(isOn: $viewModel.showOnlyFavorites) {
+                Image(systemName: "heart.fill")
+                    .imageScale(.medium)
+            }
+            .toggleStyle(.button)
+            .accessibilityLabel("Favorites only")
+            
+            if viewModel.selectedCategory != nil || viewModel.selectedArea != nil || viewModel.showOnlyFavorites {
+                Button("Reset") {
+                    viewModel.selectedCategory = nil
+                    viewModel.selectedArea = nil
+                    viewModel.showOnlyFavorites = false
+                }
+                .buttonStyle(.bordered)
+            }
+        }
+        .font(.footnote)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 6)
+    }
+    
+    @ViewBuilder
     private var contentView: some View {
         if viewModel.isLoading {
             ProgressView("Loading...").padding()
@@ -108,9 +153,21 @@ struct RecipeListView: View {
                     userRecipesSection()
                 }
                 Section("Results") {
-                    ForEach(viewModel.recipes) { recipe in
+                    let displayed = viewModel.filteredRecipes(
+                                           from: viewModel.recipes,
+                                           favorites: social.favorites
+                                       )
+                    ForEach(displayed) { recipe in
                         NavigationLink { RecipeDetailView(recipe: recipe) } label: {
                             RecipeRow(recipe: recipe)
+                        }
+                        .swipeActions(edge: .trailing) {
+                            Button {
+                                social.toggleFavorite(for: recipe)
+                            } label: {
+                                Label("Like", systemImage: social.isFavorite(recipe) ? "heart.fill" : "heart")
+                            }
+                            .tint(.red)
                         }
                     }
                 }
@@ -170,6 +227,7 @@ struct RecipeListView: View {
         }
     }
 }
+
 
 #Preview("Loaded") {
     NavigationStack {

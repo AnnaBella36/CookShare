@@ -15,6 +15,12 @@ final class RecipeListViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var hasSearched = false
     
+    @Published var categories: [Category] = []
+    @Published var areas: [Area] = []
+    @Published var selectedCategory: String? = nil
+    @Published var selectedArea: String? = nil
+    @Published var showOnlyFavorites = false
+    
     private var apiClient: APIClientProtocol
     private var lastQuery: String?
     
@@ -36,6 +42,7 @@ final class RecipeListViewModel: ObservableObject {
             hasSearched = false
             return
         }
+        
         if trimmed == lastQuery {
             return
         }
@@ -53,6 +60,32 @@ final class RecipeListViewModel: ObservableObject {
             errorMessage = (error as? APIError)?.localizedDescription ?? error.localizedDescription
         }
         isLoading = false
+    }
+    
+    func fetchCategories() async {
+        do {
+            let response = try await apiClient.fetch(CategoryResponse.self, from: .listCategories())
+            categories = response.meals
+        } catch {
+            print("⚠️ Categories fetch failed:", error)
+        }
+    }
+    
+    func fetchAreas() async {
+        do {
+            let response = try await apiClient.fetch(AreaResponse.self, from: .listAreas())
+            areas = response.meals
+        } catch {
+            print("⚠️ Areas fetch failed:", error)
+        }
+    }
+    
+    func filteredRecipes(from allRecipes: [Recipe], favorites: Set<String>) -> [Recipe] {
+        allRecipes.filter { recipe in
+            (selectedCategory == nil || recipe.category == selectedCategory) &&
+            (selectedArea == nil || recipe.area == selectedArea) &&
+            (!showOnlyFavorites || favorites.contains(recipe.id))
+        }
     }
 }
 
