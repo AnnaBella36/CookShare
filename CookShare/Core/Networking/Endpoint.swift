@@ -31,3 +31,14 @@ struct Endpoint {
     }
 }
 
+extension Endpoint {
+    static func listCategories() -> Endpoint {
+        Endpoint(path: "list.php", queryItems: [URLQueryItem(name: "c", value: "list")])
+    }
+
+    static func listAreas() -> Endpoint {
+        Endpoint(path: "list.php", queryItems: [URLQueryItem(name: "a", value: "list")])
+    }
+
+}
+
