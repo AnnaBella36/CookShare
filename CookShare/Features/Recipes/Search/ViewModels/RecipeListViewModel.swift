@@ -24,8 +24,18 @@ final class RecipeListViewModel: ObservableObject {
     private var apiClient: APIClientProtocol
     private var lastQuery: String?
     
+    var hasFiltersApplied: Bool {
+        selectedCategory != nil || selectedArea != nil || showOnlyFavorites
+    }
+    
     init(apiClient: APIClientProtocol) {
         self.apiClient = apiClient
+    }
+    
+    func resetFilters() {
+        selectedCategory = nil
+        selectedArea = nil
+        showOnlyFavorites = false
     }
     
     func reset() {
@@ -82,9 +92,10 @@ final class RecipeListViewModel: ObservableObject {
     
     func filteredRecipes(from allRecipes: [Recipe], favorites: Set<String>) -> [Recipe] {
         allRecipes.filter { recipe in
-            (selectedCategory == nil || recipe.category == selectedCategory) &&
-            (selectedArea == nil || recipe.area == selectedArea) &&
-            (!showOnlyFavorites || favorites.contains(recipe.id))
+          let matchesCategory = selectedCategory == nil || recipe.category == selectedCategory
+            let matchesArea = selectedArea == nil || recipe.area == selectedArea
+            let matchesFavorites = !showOnlyFavorites || favorites.contains(recipe.id)
+            return matchesCategory && matchesArea && matchesFavorites
         }
     }
 }

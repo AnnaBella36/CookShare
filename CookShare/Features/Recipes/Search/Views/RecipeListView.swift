@@ -27,8 +27,9 @@ struct RecipeListView: View {
                 contentView
             }
             .task {
-                await viewModel.fetchCategories()
-                await viewModel.fetchAreas()
+                async let categories =  viewModel.fetchCategories()
+                async let areas =  viewModel.fetchAreas()
+                _ = await (categories, areas)
             }
             .navigationTitle("CookBook")
             .toolbar {
@@ -102,11 +103,11 @@ struct RecipeListView: View {
             .toggleStyle(.button)
             .accessibilityLabel("Favorites only")
             
-            if viewModel.selectedCategory != nil || viewModel.selectedArea != nil || viewModel.showOnlyFavorites {
+            if viewModel.hasFiltersApplied || !searchText.isEmpty {
                 Button("Reset") {
-                    viewModel.selectedCategory = nil
-                    viewModel.selectedArea = nil
-                    viewModel.showOnlyFavorites = false
+                    searchText = ""
+                    viewModel.resetFilters()
+                    viewModel.reset()
                 }
                 .buttonStyle(.bordered)
             }
