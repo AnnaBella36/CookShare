@@ -12,9 +12,8 @@ struct RecipeListView: View {
     @EnvironmentObject var viewModel: RecipeListViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var social: SocialViewModel
-    @State private var searchText: String = ""
+    
     @FocusState private var searchFocused: Bool
-   
     @State private var showAddRecipeView = false
     
     var body: some View {
@@ -57,19 +56,18 @@ struct RecipeListView: View {
     // MARK: - Subviews
     private var searchBar: some View {
         HStack {
-            TextField("Search recipes (e.g. “pasta”)", text: $searchText)
+            TextField("Search recipes (e.g. “pasta”)", text: $viewModel.searchQuery)
                 .textFieldStyle(.roundedBorder)
                 .submitLabel(.search)
                 .focused($searchFocused)
-                .onSubmit { performSearch() }
-                .onChange(of: searchText) { newValue in
-                    if newValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                        viewModel.reset()
-                    }
-                }
+                .onSubmit {
+                    Task { await viewModel.performSearch(viewModel.searchQuery) }
+                    searchFocused = false
+            }
             
             Button {
-                performSearch()
+                Task { await viewModel.performSearch(viewModel.searchQuery) }
+               searchFocused = false
             } label: {
                 Image(systemName: "magnifyingglass")
             }
@@ -103,11 +101,10 @@ struct RecipeListView: View {
             .toggleStyle(.button)
             .accessibilityLabel("Favorites only")
             
-            if viewModel.hasFiltersApplied || !searchText.isEmpty {
+            if viewModel.hasFiltersApplied || !viewModel.searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 Button("Reset") {
-                    searchText = ""
+                    viewModel.searchQuery = ""
                     viewModel.resetFilters()
-                    viewModel.reset()
                 }
                 .buttonStyle(.bordered)
             }
@@ -121,7 +118,7 @@ struct RecipeListView: View {
     private var contentView: some View {
         if viewModel.isLoading {
             ProgressView("Loading...").padding()
-        } else if searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        } else if viewModel.searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             if social.myRecipes.isEmpty {
                 ContentUnavailableView(
                     "Search",
@@ -216,15 +213,6 @@ struct RecipeListView: View {
                         .lineLimit(2)
                 }
             }
-        }
-    }
-    
-    private func performSearch() {
-        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        
-        Task {
-            await viewModel.search(query)
-            await MainActor.run {searchFocused = false }
         }
     }
 }
