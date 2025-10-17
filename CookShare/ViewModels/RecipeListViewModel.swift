@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 @MainActor
 final class RecipeListViewModel: ObservableObject {
@@ -21,8 +22,11 @@ final class RecipeListViewModel: ObservableObject {
     @Published var selectedArea: String? = nil
     @Published var showOnlyFavorites = false
     
+    @Published var searchQuery: String = ""
+    
     private var apiClient: APIClientProtocol
     private var lastQuery: String?
+    private var cancellables = Set<AnyCancellable>()
     
     var hasFiltersApplied: Bool {
         selectedCategory != nil || selectedArea != nil || showOnlyFavorites
@@ -30,6 +34,23 @@ final class RecipeListViewModel: ObservableObject {
     
     init(apiClient: APIClientProtocol) {
         self.apiClient = apiClient
+        $searchQuery
+            .removeDuplicates()
+            .debounce(for: .milliseconds(300), scheduler: RunLoop.main)
+            .sink { [weak self] query in
+                guard let self else {return}
+                let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+                Task { @MainActor in
+                    if trimmed.isEmpty {
+                        self.resetSearchState()
+                        self.hasSearched = false
+                    } else if trimmed.count < 3 {
+                        self.recipes = []
+                        self.hasSearched = false
+                    }
+                }
+            }
+            .store(in: &cancellables)
     }
     
     func resetFilters() {
@@ -38,17 +59,17 @@ final class RecipeListViewModel: ObservableObject {
         showOnlyFavorites = false
     }
     
-    func reset() {
+    func resetSearchState() {
         recipes = []
         errorMessage = nil
         isLoading = false
         lastQuery = nil
     }
     
-    func search(_ query: String) async {
+    func performSearch(_ query: String) async {
         let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else {
-            reset()
+            resetSearchState()
             hasSearched = false
             return
         }
@@ -77,7 +98,7 @@ final class RecipeListViewModel: ObservableObject {
             let response = try await apiClient.fetch(CategoryResponse.self, from: .listCategories())
             categories = response.meals
         } catch {
-            print("⚠️ Categories fetch failed:", error)
+            print("Categories fetch failed:", error)
         }
     }
     
@@ -86,7 +107,7 @@ final class RecipeListViewModel: ObservableObject {
             let response = try await apiClient.fetch(AreaResponse.self, from: .listAreas())
             areas = response.meals
         } catch {
-            print("⚠️ Areas fetch failed:", error)
+            print("Areas fetch failed:", error)
         }
     }
     
