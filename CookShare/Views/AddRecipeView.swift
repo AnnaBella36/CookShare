@@ -10,21 +10,19 @@ import SwiftUI
 struct AddRecipeView: View {
     @Environment(\.dismiss) private var dismiss
     
-    @State private var description: String = ""
-    @State private var title: String = ""
-    @State private var selectedImage: UIImage? = nil
+    @StateObject private var viewModel = AddRecipeViewModel()
     @State private var showImagePicker = false
-
+    
     var onSave: (UserRecipe) -> Void
-
+    
     var body: some View {
         NavigationStack {
             Form {
                 Section(header: Text("Recipe title")) {
-                    TextField("Enter title", text: $title)
+                    TextField("Enter title", text: $viewModel.title)
                 }
                 Section(header: Text("Description")) {
-                    TextEditor(text: $description)
+                    TextEditor(text: $viewModel.description)
                         .frame(minHeight: 80)
                         .overlay(
                             RoundedRectangle(cornerRadius: 8)
@@ -32,7 +30,7 @@ struct AddRecipeView: View {
                         )
                 }
                 Section(header: Text("Photo")) {
-                    if let image = selectedImage {
+                    if let image = viewModel.selectedImage {
                         Image(uiImage: image)
                             .resizable()
                             .scaledToFill()
@@ -42,7 +40,7 @@ struct AddRecipeView: View {
                         Text("No image selected")
                             .foregroundStyle(.secondary)
                     }
-
+                    
                     Button("Choose photo") {
                         showImagePicker = true
                     }
@@ -53,25 +51,26 @@ struct AddRecipeView: View {
             .toolbar{
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Save") {
-                        saveRecipe()
+                        let recipe = viewModel.makeUserRecipe()
+                        onSave(recipe)
+                        dismiss()
+                        viewModel.reset()
                     }
                     .bold()
-                    .disabled(title.trimmingCharacters(in: .whitespaces).isEmpty)
+                    .disabled(viewModel.canSave)
                 }
             }
             .sheet(isPresented: $showImagePicker) {
-                ImagePicker(selectedImage: $selectedImage)
+                ImagePicker(selectedImage: $viewModel.selectedImage)
             }
         }
     }
     
-    private func  saveRecipe() {
-        let trimmedDescription = description.trimmingCharacters(in: .whitespacesAndNewlines)
-        let recipe = UserRecipe(title: title,
-                                image: selectedImage,
-                                description: trimmedDescription.isEmpty ? nil : trimmedDescription)
+    private func saveRecipe() {
+        let recipe = viewModel.makeUserRecipe()
         onSave(recipe)
         dismiss()
+        viewModel.reset()
     }
 }
 
