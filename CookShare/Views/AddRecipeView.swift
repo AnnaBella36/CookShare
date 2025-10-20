@@ -12,9 +12,9 @@ struct AddRecipeView: View {
     
     @StateObject private var viewModel = AddRecipeViewModel()
     @State private var showImagePicker = false
-
+    
     var onSave: (UserRecipe) -> Void
-
+    
     var body: some View {
         NavigationStack {
             Form {
@@ -40,7 +40,7 @@ struct AddRecipeView: View {
                         Text("No image selected")
                             .foregroundStyle(.secondary)
                     }
-
+                    
                     Button("Choose photo") {
                         showImagePicker = true
                     }
@@ -66,7 +66,7 @@ struct AddRecipeView: View {
         }
     }
     
-    private func  saveRecipe() {
+    private func saveRecipe() {
         let recipe = viewModel.makeUserRecipe()
         onSave(recipe)
         dismiss()

@@ -32,6 +32,22 @@ final class RecipeListViewModel: ObservableObject {
         selectedCategory != nil || selectedArea != nil || showOnlyFavorites
     }
     
+    var shouldShowResetButton: Bool {
+        hasFiltersApplied || isSearchActive
+    }
+    
+   private var isSearchActive: Bool {
+       !trimmedSearchQuery.isEmpty
+    }
+    
+    private var trimmedSearchQuery: String {
+        searchQuery.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+    
+    var isSearchQueryEmpty: Bool {
+        searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+    
     init(apiClient: APIClientProtocol) {
         self.apiClient = apiClient
         $searchQuery
@@ -40,14 +56,14 @@ final class RecipeListViewModel: ObservableObject {
             .sink { [weak self] query in
                 guard let self else {return}
                 let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
-                Task { @MainActor in
-                    if trimmed.isEmpty {
-                        self.resetSearchState()
-                        self.hasSearched = false
-                    } else if trimmed.count < 3 {
-                        self.recipes = []
-                        self.hasSearched = false
-                    }
+                if trimmed.isEmpty {
+                    self.resetSearchState()
+                    self.hasSearched = false
+                } else if trimmed.count < 3 {
+                    self.recipes = []
+                    self.hasSearched = false
+                } else {
+                    Task { await self.performSearch(trimmed)}
                 }
             }
             .store(in: &cancellables)
@@ -64,6 +80,13 @@ final class RecipeListViewModel: ObservableObject {
         errorMessage = nil
         isLoading = false
         lastQuery = nil
+    }
+    
+    func resetAll() {
+        searchQuery = ""
+        resetFilters()
+        selectedArea = nil
+        showOnlyFavorites = false
     }
     
     func performSearch(_ query: String) async {

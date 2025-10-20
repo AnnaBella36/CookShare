@@ -63,11 +63,11 @@ struct RecipeListView: View {
                 .onSubmit {
                     Task { await viewModel.performSearch(viewModel.searchQuery) }
                     searchFocused = false
-            }
+                }
             
             Button {
                 Task { await viewModel.performSearch(viewModel.searchQuery) }
-               searchFocused = false
+                searchFocused = false
             } label: {
                 Image(systemName: "magnifyingglass")
             }
@@ -101,12 +101,16 @@ struct RecipeListView: View {
             .toggleStyle(.button)
             .accessibilityLabel("Favorites only")
             
-            if viewModel.hasFiltersApplied || !viewModel.searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                Button("Reset") {
-                    viewModel.searchQuery = ""
-                    viewModel.resetFilters()
-                }
-                .buttonStyle(.bordered)
+//            if viewModel.hasFiltersApplied || !viewModel.searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+//                Button("Reset") {
+//                    viewModel.searchQuery = ""
+//                    viewModel.resetFilters()
+//                }
+//                .buttonStyle(.bordered)
+//            }
+            if viewModel.shouldShowResetButton {
+                Button("Reset") { viewModel.resetAll() }
+                    .buttonStyle(.bordered)
             }
         }
         .font(.footnote)
@@ -118,7 +122,7 @@ struct RecipeListView: View {
     private var contentView: some View {
         if viewModel.isLoading {
             ProgressView("Loading...").padding()
-        } else if viewModel.searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        } else if viewModel.isSearchQueryEmpty {
             if social.myRecipes.isEmpty {
                 ContentUnavailableView(
                     "Search",
@@ -152,9 +156,9 @@ struct RecipeListView: View {
                 }
                 Section("Results") {
                     let displayed = viewModel.filteredRecipes(
-                                           from: viewModel.recipes,
-                                           favorites: social.favorites
-                                       )
+                        from: viewModel.recipes,
+                        favorites: social.favorites
+                    )
                     ForEach(displayed) { recipe in
                         NavigationLink { RecipeDetailView(recipe: recipe) } label: {
                             RecipeRow(recipe: recipe)
@@ -201,7 +205,7 @@ struct RecipeListView: View {
             }
             .frame(width: 80, height: 80)
             .clipShape(RoundedRectangle(cornerRadius: 10))
-
+            
             VStack(alignment: .leading, spacing: 4) {
                 Text(recipe.title)
                     .font(.body)

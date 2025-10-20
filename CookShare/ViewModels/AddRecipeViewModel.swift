@@ -5,7 +5,6 @@
 //  Created by Olga Dragon on 17.10.2025.
 //
 
-import Foundation
 import UIKit
 
 @MainActor
@@ -21,7 +20,8 @@ final class AddRecipeViewModel: ObservableObject {
     
     func makeUserRecipe() -> UserRecipe {
         let trimmedDescription = description.trimmingCharacters(in: .whitespacesAndNewlines)
-        return UserRecipe(title: title.trimmingCharacters(in: .whitespacesAndNewlines), image: selectedImage, description: trimmedDescription.isEmpty ? nil : trimmedDescription)
+        return UserRecipe(title: title.trimmingCharacters(in: .whitespacesAndNewlines),                     image: selectedImage,
+                          description: trimmedDescription.isEmpty ? nil : trimmedDescription)
     }
     
     func reset() {
