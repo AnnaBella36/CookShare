@@ -11,8 +11,7 @@ struct MealSearchResponse: Decodable {
     let meals: [Recipe]?
 }
 
-
-struct Recipe: Identifiable, Decodable, Equatable {
+struct Recipe: Identifiable, Codable, Equatable {
     let id: String
     let title: String
     let instructions: String?
