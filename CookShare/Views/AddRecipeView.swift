@@ -57,7 +57,7 @@ struct AddRecipeView: View {
                         viewModel.reset()
                     }
                     .bold()
-                    .disabled(viewModel.canSave)
+                    .disabled(!viewModel.canSave)
                 }
             }
             .sheet(isPresented: $showImagePicker) {

@@ -27,6 +27,8 @@ final class RecipeListViewModel: ObservableObject {
     private var apiClient: APIClientProtocol
     private var lastQuery: String?
     private var cancellables = Set<AnyCancellable>()
+    private let networkMonitor = NetworkMonitor.shared
+    private let cache = OfflineCahce.shared
     
     var hasFiltersApplied: Bool {
         selectedCategory != nil || selectedArea != nil || showOnlyFavorites
@@ -36,8 +38,8 @@ final class RecipeListViewModel: ObservableObject {
         hasFiltersApplied || isSearchActive
     }
     
-   private var isSearchActive: Bool {
-       !trimmedSearchQuery.isEmpty
+    private var isSearchActive: Bool {
+        !trimmedSearchQuery.isEmpty
     }
     
     private var trimmedSearchQuery: String {
@@ -67,6 +69,23 @@ final class RecipeListViewModel: ObservableObject {
                 }
             }
             .store(in: &cancellables)
+        
+        observeNetworkChanges()
+    }
+    
+    private func observeNetworkChanges() {
+        networkMonitor.$isConnected
+            .sink { [weak self] connected in
+                if connected {
+                    Task { await self?.syncCachedData() }
+                }
+            }
+            .store(in: &cancellables)
+    }
+    
+    private func syncCachedData() async{
+        guard !recipes.isEmpty else { return }
+        await performSearch(searchQuery)
     }
     
     func resetFilters() {
@@ -101,6 +120,12 @@ final class RecipeListViewModel: ObservableObject {
             return
         }
         
+        if !networkMonitor.isConnected {
+            recipes = cache.load()
+            errorMessage = "Offline mode — showing cached results."
+            hasSearched = true
+            return
+        }
         isLoading = true
         errorMessage = nil
         hasSearched = true
@@ -110,6 +135,7 @@ final class RecipeListViewModel: ObservableObject {
             let response = try await apiClient.fetch(MealSearchResponse.self, from: endpoint)
             recipes = response.meals ?? []
             lastQuery = trimmed
+            cache.save(recipes)
         } catch {
             errorMessage = (error as? APIError)?.localizedDescription ?? error.localizedDescription
         }
@@ -136,7 +162,7 @@ final class RecipeListViewModel: ObservableObject {
     
     func filteredRecipes(from allRecipes: [Recipe], favorites: Set<String>) -> [Recipe] {
         allRecipes.filter { recipe in
-          let matchesCategory = selectedCategory == nil || recipe.category == selectedCategory
+            let matchesCategory = selectedCategory == nil || recipe.category == selectedCategory
             let matchesArea = selectedArea == nil || recipe.area == selectedArea
             let matchesFavorites = !showOnlyFavorites || favorites.contains(recipe.id)
             return matchesCategory && matchesArea && matchesFavorites
