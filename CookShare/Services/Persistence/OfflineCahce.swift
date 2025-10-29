@@ -7,15 +7,23 @@
 
 import Foundation
 
-final class OfflineCache {
-    static let shared = OfflineCache()
+final class OfflineCahce {
+    static let shared = OfflineCahce()
     private let cahceURL: URL
-    
+    private let cahceFileName = "recipes_cache.json"
+ 
     private init() {
-        let cachesDirectoryURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
-        cahceURL = cachesDirectoryURL.appendingPathComponent("recipes_cache.json")
+        guard let cahcesDirectoryURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else {
+            print("Failed to get cahces directory.")
+            cahceURL = URL(fileURLWithPath: "/dev/null")
+            return
+        }
+        cahceURL = cahcesDirectoryURL.appendingPathComponent(cahceFileName)
     }
     
+    /// Saves the provided recipes to the cache file, replacing any previously stored data.
+    /// This method always rewrites the entire cache.
+    /// Intended for storing the latest search results, not the user's search history.
     func save(_ recipes: [Recipe]) {
         do {
             let data = try JSONEncoder().encode(recipes)

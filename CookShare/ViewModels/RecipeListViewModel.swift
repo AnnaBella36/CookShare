@@ -28,7 +28,7 @@ final class RecipeListViewModel: ObservableObject {
     private var lastQuery: String?
     private var cancellables = Set<AnyCancellable>()
     private let networkMonitor = NetworkMonitor.shared
-    private let cache = OfflineCache.shared
+    private let cache = OfflineCahce.shared
     
     var hasFiltersApplied: Bool {
         selectedCategory != nil || selectedArea != nil || showOnlyFavorites
