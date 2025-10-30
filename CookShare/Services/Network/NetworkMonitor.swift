@@ -23,4 +23,11 @@ final class NetworkMonitor: ObservableObject {
         }
         monitor.start(queue: queue)
     }
+    
+#if DEBUG
+    func _setConnectionForTests(_ connected: Bool) {
+        self.isConnected = connected
+    }
+#endif
+    
 }
