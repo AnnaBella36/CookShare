@@ -29,20 +29,41 @@
 		D868407C2EB36C24005BBDDC /* CookShareHomeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CookShareHomeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		D8ECC2302EB6B16F0032309B /* Exceptions for "CookShareUITests" folder in "CookShare" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Mocks/MockAuthService.swift,
+			);
+			target = D81E8F5C2E57B6B800419ABA /* CookShare */;
+		};
+		D8ECC2312EB6B16F0032309B /* Exceptions for "CookShareUITests" folder in "CookShareHomeUITests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Mocks/MockAuthService.swift,
+			);
+			target = D868407B2EB36C24005BBDDC /* CookShareHomeUITests */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		D81E8F5F2E57B6B800419ABA /* CookShare */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = CookShare;
 			sourceTree = "<group>";
 		};
-		D86840702EB36C0E005BBDDC /* CookShareHomeTests */ = {
+		D86840702EB36C0E005BBDDC /* CookShareTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = CookShareHomeTests;
+			path = CookShareTests;
 			sourceTree = "<group>";
 		};
-		D868407D2EB36C24005BBDDC /* CookShareHomeUITests */ = {
+		D868407D2EB36C24005BBDDC /* CookShareUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = CookShareHomeUITests;
+			exceptions = (
+				D8ECC2302EB6B16F0032309B /* Exceptions for "CookShareUITests" folder in "CookShare" target */,
+				D8ECC2312EB6B16F0032309B /* Exceptions for "CookShareUITests" folder in "CookShareHomeUITests" target */,
+			);
+			path = CookShareUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -76,8 +97,8 @@
 			isa = PBXGroup;
 			children = (
 				D81E8F5F2E57B6B800419ABA /* CookShare */,
-				D86840702EB36C0E005BBDDC /* CookShareHomeTests */,
-				D868407D2EB36C24005BBDDC /* CookShareHomeUITests */,
+				D86840702EB36C0E005BBDDC /* CookShareTests */,
+				D868407D2EB36C24005BBDDC /* CookShareUITests */,
 				D81E8F5E2E57B6B800419ABA /* Products */,
 			);
 			sourceTree = "<group>";
@@ -131,7 +152,7 @@
 				D86840742EB36C0E005BBDDC /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				D86840702EB36C0E005BBDDC /* CookShareHomeTests */,
+				D86840702EB36C0E005BBDDC /* CookShareTests */,
 			);
 			name = CookShareHomeTests;
 			packageProductDependencies = (
@@ -154,7 +175,7 @@
 				D86840832EB36C24005BBDDC /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				D868407D2EB36C24005BBDDC /* CookShareHomeUITests */,
+				D868407D2EB36C24005BBDDC /* CookShareUITests */,
 			);
 			name = CookShareHomeUITests;
 			packageProductDependencies = (

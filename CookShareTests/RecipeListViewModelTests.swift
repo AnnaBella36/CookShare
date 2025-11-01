@@ -7,12 +7,16 @@
 
 import XCTest
 @testable import CookShare
+
 @MainActor
 final class RecipeListViewModelTests: XCTest {
     
     func testPerformSearchLoadsRecipesFromNetwork() async {
+        //Arrange
         let viewModel = RecipeListViewModel(apiClient: MockAPIClient())
+        //Act
         await viewModel.performSearch("pasta")
+        //Assert
         XCTAssertTrue(viewModel.hasSearched)
         XCTAssertFalse(viewModel.isLoading)
         XCTAssertNil(viewModel.errorMessage)
@@ -20,42 +24,44 @@ final class RecipeListViewModelTests: XCTest {
     }
 
     func testFilteredRecipesAppliesAllFilters() async {
+        //Arrange
         let viewModel = RecipeListViewModel(apiClient: MockAPIClient())
+        //Act
         await viewModel.performSearch("any")
-
+        //Arrange
         viewModel.selectedCategory = "Vegetarian"
         viewModel.selectedArea = "Italian"
         viewModel.showOnlyFavorites = true
-
         let favorites: Set<String> = ["52771"]
+        //Act
         let displayed = viewModel.filteredRecipes(from: PreviewData.recipes, favorites: favorites)
+        //Assert
         XCTAssertEqual(displayed.map { $0.id }, ["52771"])
     }
 
-    func testOfflineLoadsFromCacheWhenNoNetwork() async {
+    func testOfflineLoadsFromCahceWhenNoNetwork() async {
+        //Arrange
         OfflineCahce.shared.save(PreviewData.recipes)
-       
-        NetworkMonitor.shared._setConnectionForTests(false)
-
+        let _ = FakeNetworkMonitor(isConnected: false)
         let viewModel = RecipeListViewModel(apiClient: MockAPIClient())
+        //Act
         await viewModel.performSearch("pasta")
-
+        //Assert
         XCTAssertEqual(viewModel.recipes, PreviewData.recipes)
         XCTAssertEqual(viewModel.errorMessage, "Offline mode — showing cached results.")
-
-        NetworkMonitor.shared._setConnectionForTests(true)
     }
 
     func testResetAllClearsState() {
+        //Arrange
         let viewModel = RecipeListViewModel(apiClient: MockAPIClient())
         viewModel.searchQuery = "abc"
         viewModel.selectedArea = "Italian"
         viewModel.selectedCategory = "Vegetarian"
         viewModel.showOnlyFavorites = true
         viewModel.recipes = PreviewData.recipes
-
+        //Act
         viewModel.resetAll()
-
+        //Assert
         XCTAssertTrue(viewModel.searchQuery.isEmpty)
         XCTAssertNil(viewModel.selectedArea)
         XCTAssertNil(viewModel.selectedCategory)

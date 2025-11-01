@@ -10,13 +10,6 @@ import SwiftUI
 @main
 struct CookShareApp: App {
     
-#if DEBUG
-    private var isUITest: Bool {
-        ProcessInfo.processInfo.arguments.contains("UITests_AutoLogin")
-    }
-#endif
-    
-    
     private let dependencies: AppContainer
     private let viewModel: RecipeListViewModel
     private let authViewModel: AuthViewModel
@@ -29,7 +22,7 @@ struct CookShareApp: App {
         if ProcessInfo.processInfo.arguments.contains("UITests_AutoLogin") {
             container = AppContainer(
                 apiClient: MockAPIClient(),
-                authService: UITestsAuthService()
+                authService: MockAuthService()
             )
         } else {
             container = AppContainer(
@@ -59,21 +52,3 @@ struct CookShareApp: App {
         }
     }
 }
-
-#if DEBUG
-struct UITestsAuthService: AuthServiceProtocol {
-    func signup(name: String, email: String, password: String) async throws -> AuthSession {
-        AuthSession(email: email, token: "ui-tests-token", sessionCreationDate: Date())
-    }
-    
-    func login(email: String, password: String) async throws -> AuthSession {
-        AuthSession(email: email, token: "ui-tests-token", sessionCreationDate: Date())
-    }
-    
-    func logout() async {}
-    
-    func restoreSession() async -> AuthSession? {
-        AuthSession(email: "ui@test.com", token: "ui-tests-token", sessionCreationDate: Date())
-    }
-}
-#endif
