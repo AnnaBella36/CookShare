@@ -16,11 +16,31 @@ struct CookShareApp: App {
     private let socialStore: SocialViewModel
     
     init() {
-        let container = AppContainer(apiClient: APIClient(), authService: KeychainAuthService())
-        self.dependencies = container
-        self.viewModel = RecipeListViewModel(apiClient: container.apiClient)
-        self.authViewModel = AuthViewModel(authService: container.authService)
-        self.socialStore = SocialViewModel()
+        let container: AppContainer
+        
+#if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("UITests_AutoLogin") {
+            container = AppContainer(
+                apiClient: MockAPIClient(),
+                authService: MockAuthService()
+            )
+        } else {
+            container = AppContainer(
+                apiClient: APIClient(),
+                authService: KeychainAuthService()
+            )
+        }
+#else
+        container = AppContainer(
+            apiClient: APIClient(),
+            authService: KeychainAuthService()
+        )
+#endif
+        
+        dependencies = container
+        viewModel = RecipeListViewModel(apiClient: container.apiClient)
+        authViewModel = AuthViewModel(authService: container.authService)
+        socialStore = SocialViewModel()
     }
     
     var body: some Scene {
@@ -32,4 +52,3 @@ struct CookShareApp: App {
         }
     }
 }
-

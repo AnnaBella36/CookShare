@@ -27,8 +27,8 @@ final class RecipeListViewModel: ObservableObject {
     private var apiClient: APIClientProtocol
     private var lastQuery: String?
     private var cancellables = Set<AnyCancellable>()
-    private let networkMonitor = NetworkMonitor.shared
-    private let cache = OfflineCahce.shared
+    private let networkMonitor: NetworkMonitoring
+    private let cahce = OfflineCahce.shared
     
     var hasFiltersApplied: Bool {
         selectedCategory != nil || selectedArea != nil || showOnlyFavorites
@@ -50,8 +50,9 @@ final class RecipeListViewModel: ObservableObject {
         searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
     
-    init(apiClient: APIClientProtocol) {
+    init(apiClient: APIClientProtocol, networkMonitor: NetworkMonitoring = NetworkMonitor.shared) {
         self.apiClient = apiClient
+        self.networkMonitor = networkMonitor
         $searchQuery
             .removeDuplicates()
             .debounce(for: .milliseconds(300), scheduler: RunLoop.main)
@@ -74,7 +75,8 @@ final class RecipeListViewModel: ObservableObject {
     }
     
     private func observeNetworkChanges() {
-        networkMonitor.$isConnected
+        networkMonitor.isConnectedPublisher
+            .receive(on: RunLoop.main)
             .sink { [weak self] connected in
                 if connected {
                     Task { await self?.syncCachedData() }
@@ -121,7 +123,7 @@ final class RecipeListViewModel: ObservableObject {
         }
         
         if !networkMonitor.isConnected {
-            recipes = cache.load()
+            recipes = cahce.load()
             errorMessage = "Offline mode — showing cached results."
             hasSearched = true
             return
@@ -135,7 +137,7 @@ final class RecipeListViewModel: ObservableObject {
             let response = try await apiClient.fetch(MealSearchResponse.self, from: endpoint)
             recipes = response.meals ?? []
             lastQuery = trimmed
-            cache.save(recipes)
+            cahce.save(recipes)
         } catch {
             errorMessage = (error as? APIError)?.localizedDescription ?? error.localizedDescription
         }

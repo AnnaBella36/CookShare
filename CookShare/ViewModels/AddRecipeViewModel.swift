@@ -20,7 +20,7 @@ final class AddRecipeViewModel: ObservableObject {
     
     func makeUserRecipe() -> UserRecipe {
         let trimmedDescription = description.trimmingCharacters(in: .whitespacesAndNewlines)
-        return UserRecipe(title: title.trimmingCharacters(in: .whitespacesAndNewlines),                     image: selectedImage,
+        return UserRecipe(title: title.trimmingCharacters(in: .whitespacesAndNewlines),                    image: selectedImage,
                           description: trimmedDescription.isEmpty ? nil : trimmedDescription)
     }
     
